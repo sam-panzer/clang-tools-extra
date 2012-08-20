@@ -13,6 +13,8 @@ include $(CLANG_LEVEL)/../../Makefile.config
 
 PARALLEL_DIRS := remove-cstr-calls tool-template
 
+OPTIONAL_DIRS := clang_doc
+
 include $(CLANG_LEVEL)/Makefile
 
 ###
