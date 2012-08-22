@@ -98,6 +98,40 @@ Html_File::fix(const char* s) {
   return str;
 }
 
+namespace {
+std::string
+munge_fullyscopedname(const std::string& str) {
+  // strip out the "class@" instances and convert "_Bool@" to "bool@"
+  std::string result = str;
+  size_t pos = result.find("class@");
+  while (pos != std::string::npos) {
+    result.replace (pos, 6,"");
+    pos = result.find("class@");
+  }
+
+  pos = result.find("enum@");
+  while (pos != std::string::npos) {
+    result.replace (pos, 5,"");
+    pos = result.find("enum@");
+  }
+
+#if 0
+  pos = result.find("struct@");
+  while (pos != std::string::npos) {
+    result.replace (pos, 7,"");
+    pos = result.find("struct@");
+  }
+#endif
+
+  pos = result.find("@_Bool");
+  while (pos != std::string::npos) {
+    result.replace (pos, 6,"@bool");
+    pos = result.find("@_Bool");
+  }
+  return result;
+}
+} // anonymous namespace
+
 void
 Html_File::write_token(FILE* f,
                        CXFile file,
@@ -200,7 +234,13 @@ Html_File::write_token(FILE* f,
     }
 
     CXCursor ref = clang_getCursorReferenced(c);
-    std::string fsn = fullyScopedName(ref);
+    std::string fsn = munge_fullyscopedname(fullyScopedName(ref));
+
+    // FIXME: Generalize debuggin
+    if (false && (line == 2601 || line == 737))
+    {
+      std::cout << str << " : " << fsn.c_str() << std::endl;
+    }
 
 #if 0  // FIXME:  move debugging to a function
     CXString cxkind = clang_getCursorKindSpelling(curkind);
@@ -311,7 +351,7 @@ Html_File::write_comment_split(FILE* f, CXFile file, CXToken tok) {
 
   // actually split up multi-line comments and send one at
   // a time -- that way each line gets line numbers.
-  if (kind == CXToken_Comment) {
+  if (kind == CXToken_Comment || kind == CXToken_Literal) {
     std::string str = fix(sub.c_str());
     size_t i;
     size_t begin = 0;
@@ -359,7 +399,7 @@ Html_File::write_html(void) {
     fclose(f);
   }
   else
-    std::cout << "error: could not create file: " << html_filename_.c_str() << std::endl;
+    std::cerr << "error: could not create file: " << html_filename_.c_str() << "\n";
 
   clang_disposeTokens(tu_file_->tu(), tokens, num);
 }

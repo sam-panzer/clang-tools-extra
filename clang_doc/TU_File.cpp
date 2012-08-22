@@ -46,6 +46,7 @@ void PrintDiagnostic(CXDiagnostic Diagnostic) {
   if (!file)
     return;
 
+#if 1
   num_fixits = clang_getDiagnosticNumFixIts(Diagnostic);
   fprintf(stderr, "Number FIX-ITs = %d\n", num_fixits);
   for (i = 0; i != num_fixits; ++i) {
@@ -81,6 +82,7 @@ void PrintDiagnostic(CXDiagnostic Diagnostic) {
     }
     clang_disposeString(insertion_text);
   }
+#endif
 }
 
 void PrintDiagnosticSet(CXDiagnosticSet Set) {
@@ -108,13 +110,15 @@ TU_File::TU_File(int argc,
                  CXIndex idx,
                  const std::string& source_filename,
                  const std::string& object_dir,
-                 const std::string& prefix)
+                 const std::string& prefix,
+                 bool reparse)
   : idx_(idx),
     tu_(0),
     argc_(argc),
     argv_(argv),
     source_filename_(source_filename),
-    length_(0) {
+    length_(0),
+    reparse_ (reparse) {
   object_dir_ = strip_final_seps(object_dir);
   prefix_ = strip_final_seps(prefix);
   tu_filename_ = make_filename(source_filename_, object_dir_, prefix_, ".tu");
@@ -137,7 +141,7 @@ void
 TU_File::load_tu(void) {
   struct stat st;
 
-  if (false && stat(tu_filename_.c_str(), &st) == 0) {
+  if (!reparse_ && stat(tu_filename_.c_str(), &st) == 0) {
     std::cout << "found tu file: " << tu_filename_.c_str() << std::endl;
     // Note that this will crash in 3.1 if the any of the source files have
     // changed and it has to be regenerated.  I think the head works though.
@@ -146,7 +150,7 @@ TU_File::load_tu(void) {
     tu_ = clang_createTranslationUnit(idx_, tu_filename_.c_str());
     return;
   }
-  std::cout << "parsing tu file: " << tu_filename_.c_str() << std::endl;
+  std::cout << "parsing file: " << source_filename_.c_str() << std::endl;
 
   tu_ = clang_parseTranslationUnit(idx_,
                                    source_filename_.c_str(),
@@ -157,7 +161,6 @@ TU_File::load_tu(void) {
                                    clang_defaultEditingTranslationUnitOptions());//0);
   if (tu_)
   {
-    std::cout << "saving tu file: " << tu_filename_.c_str() << std::endl;
     int ret = clang_saveTranslationUnit(tu_,
                                         tu_filename_.c_str(),
                                         clang_defaultSaveOptions(tu_));

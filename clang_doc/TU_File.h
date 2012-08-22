@@ -10,9 +10,8 @@
 #ifndef INCLUDED_TU_FILE_H
 #define INCLUDED_TU_FILE_H
 
+#include "clang-c/Index.h"
 #include <string>
-
-#include <clang-c/Index.h>
 
 namespace clang_doc {
 
@@ -23,7 +22,8 @@ public:
           CXIndex idx,
           const std::string& source_filename,
           const std::string& object_dir,
-          const std::string& prefix);
+          const std::string& prefix,
+          bool reparse = false);
 
   ~TU_File(void);
 
@@ -53,6 +53,7 @@ private:
   std::string tu_filename_;
 
   unsigned length_;
+  bool reparse_;
 };
 
 } // clang_doc

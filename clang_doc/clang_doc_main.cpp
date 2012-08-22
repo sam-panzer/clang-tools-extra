@@ -115,15 +115,15 @@ main (int argc , char *argv[]) {
   if (parse (argc, argv) != 0)
     return 1;
 
-  std::cout << "file:       " << g_file.c_str() << std::endl;
-  std::cout << "root_dir:   " << g_root_dir.c_str() << std::endl;
-  std::cout << "html_dir:   " << g_html_dir.c_str() << std::endl;
-  std::cout << "object_dir: " << g_object_dir.c_str() << std::endl;
+  std::cout << "file:       " << g_file.c_str() << "\n";
+  std::cout << "root_dir:   " << g_root_dir.c_str() << "\n";
+  std::cout << "html_dir:   " << g_html_dir.c_str() << "\n";
+  std::cout << "object_dir: " << g_object_dir.c_str() << "\n";
 
   std::cout << "\nremaining commandline args:\n";
   for (int i = 0; i < argc; ++i)
     std::cout << argv[i] << " ";
-  std::cout << std::endl;
+  std::cout << "\n";
 
   std::set<std::string> files;
   if (g_file.empty()) {
@@ -139,11 +139,16 @@ main (int argc , char *argv[]) {
   else
     files.insert(g_file);
 
+  // make sure we don't read our own tag file
+  files.erase(g_tag_out);
+
+#if 0
   std::cout << "\ninput files:\n";
   for (std::set<std::string>::const_iterator i = files.begin(), e = files.end();
        i != e; ++i) {
-    std::cout << (*i).c_str() << std::endl;
+    std::cout << (*i).c_str() << "\n";
   }
+#endif
 
   clang_doc::Clang_Doc doc =
     clang_doc::Clang_Doc(argc, argv, files, g_object_dir, g_html_dir, g_root_dir);

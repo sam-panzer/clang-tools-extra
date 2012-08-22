@@ -10,7 +10,7 @@
 #ifndef INCLUDED_HTML_FILE_H
 #define INCLUDED_HTML_FILE_H
 
-#include <clang-c/Index.h>
+#include "clang-c/Index.h"
 
 #include <string>
 #include <set>

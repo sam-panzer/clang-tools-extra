@@ -13,8 +13,6 @@
 
 #include <iostream>
 #include <libgen.h>
-#include <getopt.h>
-
 
 namespace clang_doc {
 
@@ -86,18 +84,15 @@ Clang_Doc::visitor(CXCursor cursor, CXCursor parent, CXClientData client_data) {
   clang_disposeString(cxkind);
 #endif
 
-  if (clang_isDeclaration(cursor.kind))
-  {
-    if (clang_isCursorDefinition(cursor))
-    {
+  if (clang_isDeclaration(cursor.kind)) {
+    if (clang_isCursorDefinition(cursor)) {
       CXString cxusr = clang_getCursorUSR(cursor);
       std::string susr = clang_getCString(cxusr);
       // external linkage begins with "c:@", but not @aN, which is an anonymous
       // namespace otherwise, it would be "c:somefile.cpp@..."
-      if (susr[2] == '@' && !(susr.substr(2,3) == "@aN"))
-      {
+      if (susr[2] == '@' && !(susr.substr(2,3) == "@aN")) {
         Definition def;
-        // can't use usr since you can only generate it for the defs, not declartions.
+        // can't use usr since you can only generate it for the defs, not declarations.
         def.key = fullyScopedName(cursor);
         def.file = vd->filename;
         def.line = line;
@@ -137,8 +132,9 @@ Clang_Doc::~Clang_Doc(void) {
 
 void
 Clang_Doc::add_symbols(const std::set<std::string>& tags) {
-  std::cout << "Clang_Doc::add_symbols\n";
+  //std::cout << "Clang_Doc::add_symbols\n";
 
+  std::cout << "tag files:\n";
   for (std::set<std::string>::iterator i = tags.begin(),
          e = tags.end(); i != e; ++i) {
     FILE* f = fopen((*i).c_str(), "r");
@@ -159,25 +155,24 @@ Clang_Doc::add_symbols(const std::set<std::string>& tags) {
         defmap_.insert(std::pair<std::string, Definition>(def.key, def));
       }
       fclose(f);
-      std::cout << "loaded tag file: " << (*i).c_str() << std::endl;
+      std::cout << (*i).c_str() << "\n";
     }
-    //else
-    //  std::cout << "error opening tag file: " << (*i).c_str() << std::endl;
   }
+  std::cout << std::endl;
 }
 
 void
 Clang_Doc::generate_symbol_table(const std::set<std::string>& tags) {
-  std::cout << "Clang_Doc::generate_symbol_table\n";
+  //std::cout << "Clang_Doc::generate_symbol_table\n";
 
   add_symbols (tags);
 
   for (std::set<std::string>::const_iterator i = files_.begin(),
          e = files_.end(); i != e; ++i) {
-    TU_File tu_file = TU_File (argc_, argv_, idx_, (*i), object_dir_, prefix_);
+    TU_File tu_file = TU_File (argc_, argv_, idx_, (*i), object_dir_, prefix_, true);
     CXTranslationUnit tu = tu_file.tu();
     if (!tu) {
-      std::cout << "error: failed to parse \"" << (*i).c_str() << "\"\n";
+      std::cerr << "error: failed to parse \"" << (*i).c_str() << "\"\n";
       continue;
     }
 
@@ -192,15 +187,17 @@ Clang_Doc::generate_symbol_table(const std::set<std::string>& tags) {
     clang_visitChildren(c, visitor_c, &vd);
   }
 
+#if 0
   std::cout << "\n\nList of definition with external linkage\n";
 
   for (std::map<std::string, Definition>::iterator i = defmap_.begin(),
          e = defmap_.end(); i != e; ++i) {
     std::cout << (*i).second.file.c_str() << ":" << (*i).second.line;
     std::cout << ":" << (*i).second.column << ":   " << (*i).second.key.c_str();
-    std::cout << std::endl;
+    std::cout << "\n";
   }
   std::cout << std::endl;
+#endif
 }
 
 void
@@ -222,7 +219,7 @@ Clang_Doc::generate_tag_file(const std::string& tag_file) {
     fclose(f);
   }
   else
-    std::cout << "error creating tag file: " << tag_file.c_str() << std::endl;
+    std::cerr << "error creating tag file: " << tag_file.c_str() << "\n";
 }
 
 void
@@ -239,7 +236,7 @@ Clang_Doc::generate_html_files(const std::string& tag_file) {
 
 void
 Clang_Doc::parse_include_directives (void) {
-  std::cout << "parse_include_directives\n";
+  //std::cout << "parse_include_directives\n";
 
   bool getnext = false;
   bool found = false;
@@ -267,10 +264,11 @@ Clang_Doc::parse_include_directives (void) {
     }
   }
 
-  std::cout << "includes:\n";
+  std::cout << "include paths:\n";
   for (std::vector<std::string>::iterator i = includes_.begin(),
          e = includes_.end(); i != e; ++i)
-    std::cout << (*i).c_str() << std::endl;
+    std::cout << (*i).c_str() << "\n";
+  std::cout << std::endl;
 }
 
 } // clang_doc

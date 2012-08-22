@@ -8,7 +8,6 @@
 */
 
 #include "Utils.h"
-#include <regex.h>
 
 #include <iostream>
 
@@ -57,13 +56,13 @@ make_filename(const std::string& file,
               const std::string& prefix,
               const std::string& suffix,
               bool full_path) {
-  //std::cout << "make_filename: " << file.c_str() << std::endl;
+  //std::cout << "make_filename: " << file.c_str() << "\n";
 
 #if 1
   // FIXME: use regex to strip off common root
-  int len = prefix.length();
-  if (len>0) ++len; // add separator
-  std::string sub = file.substr(len) + suffix;
+  size_t len = prefix.length();
+  if (len > 0 && len < file.length()) ++len; // add separator
+  std::string sub = file.substr (len) + suffix;
 #else
   std::string sub = file + suffix;
 #endif
