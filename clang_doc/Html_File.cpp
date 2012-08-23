@@ -138,8 +138,6 @@ Html_File::write_token(FILE* f,
   CXSourceLocation tloc = clang_getTokenLocation(tu_file_->tu(), tok);
   CXCursor c = clang_getCursor(tu_file_->tu(), tloc);
 
-  CXCursorKind curkind = clang_getCursorKind(c);
-
   if (cur_line_ <= line) cur_column_ = 1;
 
   for (; cur_line_ <= line; ++cur_line_)
@@ -150,7 +148,7 @@ Html_File::write_token(FILE* f,
 
   switch (clang_getTokenKind(tok)) {
   case (CXToken_Punctuation):
-    if (strcmp(str, "#") == 0)
+    if (str[0] == '#')
       preprocessor = true;
     fprintf(f, "%s", str);
     break;
@@ -174,7 +172,6 @@ Html_File::write_token(FILE* f,
       }
 
       // first, use this file's path, then all the include paths
-
       bool found_include = false;
       char path[PATH_MAX];
       std::string includefile = realpath(dirname(tu_file_->source_filename()), path);
@@ -185,8 +182,6 @@ Html_File::write_token(FILE* f,
       } else {
         for (std::vector<std::string>::const_iterator i = includes_.begin(),
                e = includes_.end(); i != e; ++i) {
-          char path[PATH_MAX];
-
           includefile = realpath((*i).c_str(), path);
           includefile += "/" + t;
           if (stat(includefile.c_str(), &st) == 0) {
@@ -225,15 +220,6 @@ Html_File::write_token(FILE* f,
       break;
     }
 
-    CXCursor ref = clang_getCursorReferenced(c);
-    std::string fsn = munge_fullyscopedname(fullyScopedName(ref));
-
-    // FIXME: Generalize debuggin
-    if (false && (line == 2601 || line == 737))
-    {
-      std::cout << str << " : " << fsn.c_str() << std::endl;
-    }
-
     // Calling clang_getCursorDefinition() does not work properly
     // for template classes, i.e., it will find the method
     // declaration, not the definition, if they differ.  However,
@@ -250,7 +236,7 @@ Html_File::write_token(FILE* f,
     unsigned refl = line;
     bool found = false;
 
-    if (!clang_Cursor_isNull(cref) && curkind != CXCursor_Namespace) {
+    if (!clang_Cursor_isNull(cref) && cref.kind != CXCursor_Namespace) {
       CXSourceLocation refloc = clang_getCursorLocation(cref);
       if (!clang_equalLocations(tloc, refloc)) {
         CXFile cxfile;
@@ -272,13 +258,17 @@ Html_File::write_token(FILE* f,
         }
       }
     }
-    else if (!clang_isDeclaration(curkind) && !fsn.empty()) {
-      std::map<std::string, Definition>::iterator r = defmap_.find(fsn);
-      if (r != defmap_.end()) {
-        found = true;
-        rfile = r->second.file.c_str();
-        html_dir = r->second.html_path.c_str();
-        refl = r->second.line;
+    else if (!clang_isDeclaration(c.kind) && c.kind != CXCursor_Namespace) {
+      CXCursor ref = clang_getCursorReferenced(c);
+      if (ref.kind != CXCursor_Namespace) {
+        std::string fsn = munge_fullyscopedname(fullyScopedName(ref));
+        std::map<std::string, Definition>::iterator r = defmap_.find(fsn);
+        if (r != defmap_.end()) {
+          found = true;
+          rfile = r->second.file.c_str();
+          html_dir = r->second.html_path.c_str();
+          refl = r->second.line;
+        }
       }
     }
 
