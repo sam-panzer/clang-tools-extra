@@ -54,7 +54,7 @@ Clang_Doc::visitor(CXCursor cursor, CXCursor parent, CXClientData client_data) {
       std::string susr = clang_getCString(cxusr);
       // external linkage begins with "c:@", but not @aN, which is an anonymous
       // namespace otherwise, it would be "c:somefile.cpp@..."
-      if (susr[2] == '@' && !(susr.substr(2,3) == "@aN")) {
+      if (susr.length() >= 5 && susr[2] == '@' && !(susr.substr(2,3) == "@aN")) {
         Definition def;
         // can't use usr since you can only generate it for the defs, not declarations.
         def.key = fullyScopedName(cursor);
