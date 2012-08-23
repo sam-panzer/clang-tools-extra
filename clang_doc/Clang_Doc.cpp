@@ -48,42 +48,6 @@ Clang_Doc::visitor(CXCursor cursor, CXCursor parent, CXClientData client_data) {
   if (cxfile != vd->file)
     return CXChildVisit_Continue;
 
-
-#if 0
-
-  CXString cxstrfilename = clang_getFileName(cxfile);
-  const char* sfilename = clang_getCString(cxstrfilename);
-  CXCursorKind kindx = clang_getCursorKind(cursor);
-  std::string strfullyscopednamex = fullyScopedName(cursor);
-  unsigned declx = clang_isDeclaration(cursor.kind);
-  unsigned defx = clang_isCursorDefinition(cursor);
-  CXString cxspelling = clang_getCursorSpelling(cursor);
-  CXString cxdisplayname = clang_getCursorDisplayName(cursor);
-  CXString cxkind = clang_getCursorKindSpelling(cursor.kind);
-  const char* sdisplayname = clang_getCString(cxdisplayname);
-  const char* sspelling = clang_getCString(cxspelling);
-  const char* skind = clang_getCString(cxkind);
-
-  bool global = false;
-
-  CXString cxusrx = clang_getCursorUSR(cursor);
-  const char* susrx = clang_getCString(cxusrx);
-
-  std::cout << "visitor: " << STR(sfilename) << ":" << line << ":" << column;
-  std::cout << ": kind = " << kindx << " : " << STR (skind);
-  std::cout << " (" << (global?"global":"local");
-  std::cout << (defx?" definition) ":(declx?" declaration) ":") "));
-  std::cout << STR(sspelling) << " \"" << STR(sdisplayname) << "\" ";
-  std::cout << strfullyscopednamex.c_str();
-  std::cout << " -- " << STR (susrx) << "\n";
-
-  clang_disposeString(cxusrx);
-  clang_disposeString(cxstrfilename);
-  clang_disposeString(cxdisplayname);
-  clang_disposeString(cxspelling);
-  clang_disposeString(cxkind);
-#endif
-
   if (clang_isDeclaration(cursor.kind)) {
     if (clang_isCursorDefinition(cursor)) {
       CXString cxusr = clang_getCursorUSR(cursor);

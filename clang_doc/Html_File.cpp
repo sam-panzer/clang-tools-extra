@@ -242,33 +242,6 @@ Html_File::write_token(FILE* f,
       std::cout << str << " : " << fsn.c_str() << std::endl;
     }
 
-#if 0  // FIXME:  move debugging to a function
-    CXString cxkind = clang_getCursorKindSpelling(curkind);
-    const char* skind = clang_getCString(cxkind);
-    CXString dn = clang_getCursorDisplayName(c);
-    const char* sdn = clang_getCString(dn);
-    CXString cxusr = clang_getCursorUSR(ref);
-    const char* susr = clang_getCString(cxusr);
-    CXString cxrefdn = clang_getCursorDisplayName(ref);
-    const char* srefdn = clang_getCString(cxrefdn);
-
-    unsigned def = clang_isCursorDefinition(c);
-
-    std::cout << "write_token: " << source_filename_ << ":" << line
-              << ":" << column
-              << ": tkind = " << clang_getTokenKind(tok)
-              << " : curkind = " << skind
-              << (def?" (definition) ":"")
-              << " : " << str << " -- " << sdn << " ref: \""
-              << STR (srefdn) << "\""
-              << " fsn: \"" << fsn.c_str() << " -- " << STR(susr) << "\"\n";
-
-    clang_disposeString(cxrefdn);
-    clang_disposeString(cxusr);
-    clang_disposeString(dn);
-    clang_disposeString(cxkind);
-#endif
-
     // Calling clang_getCursorDefinition() does not work properly
     // for template classes, i.e., it will find the method
     // declaration, not the definition, if they differ.  However,
