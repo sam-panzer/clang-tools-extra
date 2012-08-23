@@ -115,14 +115,6 @@ munge_fullyscopedname(const std::string& str) {
     pos = result.find("enum@");
   }
 
-#if 0
-  pos = result.find("struct@");
-  while (pos != std::string::npos) {
-    result.replace (pos, 7,"");
-    pos = result.find("struct@");
-  }
-#endif
-
   pos = result.find("@_Bool");
   while (pos != std::string::npos) {
     result.replace (pos, 6,"@bool");
