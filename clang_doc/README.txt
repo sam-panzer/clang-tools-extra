@@ -27,3 +27,9 @@ things clang_doc will do:
 
  - generate additional html pages for files, variables, references,
    etc., as needed
+
+
+To see how clang_doc can be used in a make system, please take a look
+at my changes to llvm/Makefile.rules:
+
+https://github.com/donhinton/llvm/commit/1a8039b07fd442da13abc99582e03621afb0322b
