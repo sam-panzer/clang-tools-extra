@@ -352,7 +352,9 @@ Html_File::write_comment_split(FILE* f, CXFile file, CXToken tok) {
   // actually split up multi-line comments and send one at
   // a time -- that way each line gets line numbers.
   if (kind == CXToken_Comment || kind == CXToken_Literal) {
-    std::string str = fix(sub.c_str());
+    std::string str = sub.c_str();
+    if (kind == CXToken_Comment)
+      str = fix(sub.c_str());
     size_t i;
     size_t begin = 0;
     for (i = 0; i < str.length(); ++i) {
