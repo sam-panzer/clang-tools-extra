@@ -17,6 +17,14 @@
 #include <sys/param.h>
 #include <stdlib.h>
 
+// These are here for testing only, please don't remove
+#ifdef __cplusplus
+extern "C" {
+#endif
+#ifdef __cplusplus
+}
+#endif
+
 namespace clang_doc {
 
 Html_File::Html_File(int argc,
@@ -220,6 +228,13 @@ Html_File::write_token(FILE* f,
       break;
     }
 
+    if (clang_isUnexposed(c.kind)) {
+      fprintf(f, "<span class=\"code\">%s</span>", str);
+      fprintf(f, "<!-- origin line: %i : %s : kind = %i -->",
+              __LINE__, str, c.kind);
+      break;
+    }
+
     // Calling clang_getCursorDefinition() does not work properly
     // for template classes, i.e., it will find the method
     // declaration, not the definition, if they differ.  However,
@@ -230,6 +245,13 @@ Html_File::write_token(FILE* f,
     CXCursor cref =
       clang_getCursorDefinition(clang_getCursor(tu_file_->tu(),
                                                 decloc));
+
+    if (clang_isUnexposed(cref.kind)) {
+      fprintf(f, "<span class=\"code\">%s</span>", str);
+          fprintf(f, "<!-- origin line: %i : (ref) %s : kind = %i -->",
+                  __LINE__, str, cref.kind);
+      break;
+    }
 
     std::string rfile;
     std::string html_dir;
@@ -243,8 +265,11 @@ Html_File::write_token(FILE* f,
         unsigned col;
         unsigned off;
         clang_getExpansionLocation(refloc, &cxfile, &refl, &col, &off);
-        if (cxfile == file)
+        if (cxfile == file) {
           found = true;
+          fprintf(f, "<!-- origin line: %i : (ref) %s : kind = %i -->",
+                  __LINE__, str, cref.kind);
+        }
         else {
           CXString cxfn = clang_getFileName(cxfile);
           const char* fn = clang_getCString(cxfn);
@@ -252,6 +277,8 @@ Html_File::write_token(FILE* f,
             if (files_.find(fn) != files_.end()) {
               rfile = fn;
               found = true;
+              fprintf(f, "<!-- origin line: %i : (ref) %s : kind = %i -->",
+                      __LINE__, str, cref.kind);
             }
           }
           clang_disposeString(cxfn);
@@ -262,12 +289,19 @@ Html_File::write_token(FILE* f,
       CXCursor ref = clang_getCursorReferenced(c);
       if (ref.kind != CXCursor_Namespace) {
         std::string fsn = munge_fullyscopedname(fullyScopedName(ref));
-        std::map<std::string, Definition>::iterator r = defmap_.find(fsn);
-        if (r != defmap_.end()) {
-          found = true;
-          rfile = r->second.file.c_str();
-          html_dir = r->second.html_path.c_str();
-          refl = r->second.line;
+        if (fsn.empty()) {
+            fprintf(f, "<!-- origin line: %i : (fsn empty) %s : kind = %i -->",
+                    __LINE__, str, c.kind);
+        } else {
+          std::map<std::string, Definition>::iterator r = defmap_.find(fsn);
+          if (r != defmap_.end()) {
+            found = true;
+            fprintf(f, "<!-- origin line: %i : %s : kind = %i -->",
+                    __LINE__, fsn.c_str(), c.kind);
+            rfile = r->second.file.c_str();
+            html_dir = r->second.html_path.c_str();
+            refl = r->second.line;
+          }
         }
       }
     }
