@@ -10,19 +10,20 @@ things clang_doc does now:
  - generates html pages for a group of files in a sub-project, e.g., a
    library
 
- - generates a tag for with external symbols
+ - generates a tag for each sub-project listing external symbols
 
- - can read multiple tag files to generate cross sub-projects links.
+ - reads multiple tag files from other sub-projects to generate cross
+   sub-projects links.
 
 things clang_doc will do:
 
- - generate an index.html files for each sub-project
+ - generate an index.html file for each sub-project
 
- - generate an index.html for an overall project including multiple
-   sub-projects
+ - generate an index.html file for an overall project containing
+   multiple sub-projects
 
  - generate documenation pages for each namespace and class in a
    sub-project
 
  - generate additional html pages for files, variables, references,
-   etc.
+   etc., as needed
